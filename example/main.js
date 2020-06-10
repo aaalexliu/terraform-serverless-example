@@ -1,12 +1,12 @@
 'use strict'
 
 exports.handler = function(event, context, callback) {
-  var response = {
+  const response = {
     statusCode: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8'
     },
-    body: '<p>Hello world!</p>'
+    body: '<p>Bonjour au monde!</p>'
   }
   callback(null, response)
 }

@@ -41,13 +41,6 @@ EOF
 
 }
 
-
-
-resource "aws_api_gateway_rest_api" "example" {
-  name = "ServerlessExample"
-  description = "Terraform Serverless Application Example"
-}
-
 # All incoming requests to API Gateway must match with a configured resource
 # and method in order to be handled. Append the following to the lambda.tf 
 # file to define a single proxy resource
@@ -123,4 +116,20 @@ resource "aws_api_gateway_deployment" "example" {
 
   rest_api_id = aws_api_gateway_rest_api.example.id
   stage_name = "test"
+}
+
+# By default any two AWS services have no access to one another, until access
+# is explicitly granted. For Lambda functions, access is granted using the 
+# aws_lambda_permission resource, which should be added to the lambda.tf file 
+# created in an earlier step:
+
+resource "aws_lambda_permission" "apigw" {
+  statement_id = "AllowAPIGatewayInvoke"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.example.function_name
+  principal = "apigateway.amazonaws.com"
+
+  # The "/*/*" portion grants access from any method on any resource
+   # within the API Gateway REST API.
+  source_arn =  "${aws_api_gateway_rest_api.example.execution_arn}/*/*"
 }
