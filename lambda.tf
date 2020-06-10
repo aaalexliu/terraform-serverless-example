@@ -41,7 +41,33 @@ EOF
 
 }
 
+
+
 resource "aws_api_gateway_rest_api" "example" {
   name = "ServerlessExample"
   description = "Terraform Serverless Application Example"
 }
+
+# All incoming requests to API Gateway must match with a configured resource
+# and method in order to be handled. Append the following to the lambda.tf 
+# file to define a single proxy resource
+
+resource "aws_api_gateway_resource" "proxy" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  parent_id = aws_api_gateway_rest_api.example.root_resource_id
+  path_part = "{proxy+}"
+}
+
+# The special path_part value "{proxy+}" activates proxy behavior, which means 
+# that this resource will match any request path. Similarly, the 
+# aws_api_gateway_method block uses a http_method of "ANY", which allows any
+# request method to be used. Taken together, this means that all incoming requests
+# will match this resource.
+
+resource "aws_api_gateway_method" "proxy" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = "ANY"
+  authorization = "NONE"
+}
+
